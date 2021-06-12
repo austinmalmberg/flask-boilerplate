@@ -1,52 +1,36 @@
 {% extends 'layouts/base.html' %}
 
+{% from 'components/_forms.html' import inline_form %}
+
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{% block title %}{{ form_name }}{% endblock %}</div>
+                <div class="card-header">{% block title %}{{ form.name }}{% endblock %}</div>
                 <div class="card-body">
-                    {% with server_errors = get_flashed_messages() %}
-                        {% if form.errors or server_errors %}
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                {% if form.errors %}
-                                    {% for _, field_errors in form.errors.items() %}
-                                        {% for error in field_errors %}
-                                        <li>{{ error }}</li>
-                                        {% endfor %}
+                    {% set server_errors = get_flashed_messages() %}
+                    {% if form.errors or server_errors %}
+                    <div class="alert alert-danger">
+                        <ul class="list-unstyled mb-0">
+                            {% if form.errors %}
+                                {% for _, field_errors in form.errors.items() %}
+                                    {% for error in field_errors %}
+                                    <li>{{ error }}</li>
                                     {% endfor %}
-                                {% endif %}
-
-                                {% if server_errors %}
-                                    {% for message in server_errors %}
-                                    <li>{{ message }}</li>
-                                    {% endfor %}
-                                {% endif %}
-                            </ul>
-                        </div>
-                        {% endif %}
-                    {% endwith %}
-
-                    <form id="login-form" action="{{ request.path }}" method="post">
-                        {{ form.csrf_token() }}
-
-                        {% for field in form if field.widget.input_type != 'hidden' %}
-                            <div class="mb-4 row">
-                            {% if field.type == 'BooleanField' %}
-                                {{ field(class='form-control offset-md-4') }} {{ field.label(class='col-form-label col-md-6') }}
-                            {% else %}
-                                {{ field.label(class='col-md-4 col-form-label text-md-right') }}
-                                <div class="col col-md-6">
-                                    {{ field(class='form-control') }}
-                                </div>
+                                {% endfor %}
                             {% endif %}
-                            </div>
-                        {% endfor %}
 
-                        <button type="submit" class="btn btn-primary col col-md-3 offset-md-7">{{ form_name }}</button>
-                    </form>
+                            {% if server_errors %}
+                                {% for message in server_errors %}
+                                <li>{{ message }}</li>
+                                {% endfor %}
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {{ inline_form(form) }}
                 </div>
             </div>
         </div>

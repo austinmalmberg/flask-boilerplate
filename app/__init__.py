@@ -1,6 +1,7 @@
 import os
 
-from flask import Flask
+from flask import Flask, request, render_template, jsonify
+from werkzeug.exceptions import HTTPException
 
 from app import database, routes
 from app.helpers import user_manager
@@ -11,7 +12,7 @@ def create_app():
 
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY', 'dev'),
-        SQLALCHEMY_DATABASE_URI=os.environ['DATABASE_URL'],
+        SQLALCHEMY_DATABASE_URI=os.environ.get('SQLALCHEMY_DATABASE_URI', 'sqlite:///./database/app.db'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
 
@@ -23,5 +24,14 @@ def create_app():
 
     routes.register_blueprints(app)
     app.add_url_rule('/', 'index')
+
+    @app.errorhandler(HTTPException)
+    def unauthorized_error(error: HTTPException):
+        if request.path.startswith('/api'):
+            return jsonify(
+                dict(message=error.name, description=error.description, status=error.code)
+            ), error.code
+
+        return render_template('error.html', error=error), error.code
 
     return app
